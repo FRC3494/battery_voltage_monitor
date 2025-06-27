@@ -34,14 +34,19 @@ void setup() {
   Serial.println("System Powered On. Reset Ah meter. Press button to start.");
 
   // Wait until button is pressed (buttonPin LOW)
-  while (digitalRead(buttonPin) == HIGH) {
-    delay(100);
-  }
+  // while (digitalRead(buttonPin) == HIGH) { // should be at the top of loop, shld start the loop !!!!!!!
 }
 
-void loop() {
+void loop(){
+  // wait for button to be pressed
+  //turn charger off, load on
+  //loop waiting for the battery to be discharged
+  //after loop is done, turn load off charger on, print how long test took
+}
+
+void chatgptloop() {
   float voltage = readBatteryVoltage();
-  Serial.print("Initial Voltage: ");
+  Serial.print("Battery Voltage: ");
   Serial.println(voltage);
 
   if (voltage > chargedThreshold) {
@@ -54,7 +59,7 @@ void loop() {
     Serial.print("Voltage under load: ");
     Serial.println(voltage);
 
-    if (voltage < lowVoltageThreshold) {
+    if (voltage < lowVoltageThreshold) {                      // new loop: keeps going on until the voltage is below the min voltage
       shutdownAll("Voltage dropped too low under load");
       return;
     }
@@ -96,10 +101,11 @@ void powerLoad() {
 }
 
 void chargeBattery() {
+  digitalWrite(negative_load, LOW);
+  digitalWrite(positive_load, LOW);
   digitalWrite(positive_charger, HIGH);
   digitalWrite(negative_charger, HIGH);
-  digitalWrite(positive_load, LOW);
-  digitalWrite(negative_load, LOW);
+  
 }
 
 void shutdownAll(const char* reason) {
@@ -107,11 +113,11 @@ void shutdownAll(const char* reason) {
   allOff();
   delay(30000);  // Wait 30 seconds before charging
   chargeBattery();
-  Serial.println("Charging battery now...");
+  Serial.println("Charging battery now..."); //FIX - 
 }
 
 float readBatteryVoltage() {
-  int raw = analogRead(voltagePin);
-  float voltage = raw * (5.0 / 1023.0) * voltageDividerFactor;
-  return voltage;
+  int raw = analogRead(voltagePin); //10 bit binary number 0=0volts, 1023= 5volts
+  float dividedVoltage = raw * (5.0 / 1023.0); //converts that into 0.0 = 0volts and 5.0 =5volts
+  return dividedVoltage * voltageDividerFactor;
 }
