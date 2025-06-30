@@ -1,4 +1,14 @@
-// === Relay Control Pins ===
+
+/*| Arduino Pin | Connects To                            |
+| ----------- | -------------------------------------- |
+| Pin 2       | Button → Other side of button to GND   |
+| Pin 4       | Relay IN1 (controls positive charger)  |
+| Pin 5       | Relay IN2 (controls negative charger)  |
+| Pin 6       | Relay IN3 (controls positive load)     |
+| Pin 7       | Relay IN4 (controls negative load)     |
+| A0          | Middle of voltage divider from battery |
+*/
+// Relay Control Pins 
 const int positive_charger = 4;
 const int negative_charger = 5;
 const int positive_load = 6;
@@ -6,16 +16,14 @@ const int negative_load = 7;
 const int buttonPin = 2;
 const int voltagePin = A0;
 
-// === Voltage Divider Resistor Values ===
-// Replace these with your actual resistor values in ohms
-const float R1 = 30000.0;  // e.g., 30k ohms (from battery + to A0)
-const float R2 = 7500.0;   // e.g., 7.5k ohms (from A0 to GND)
+// Voltage Divider Resistor Values
+const float R1 = 2200.0;  // 2.2k ohms (from battery + to A0)
+const float R2 = 1000.0;  // 1k ohms (from A0 to GND)
 
 // Calculate voltage divider factor:
-// voltageDividerFactor = (R1 + R2) / R2
-const float voltageDividerFactor = (R1 + R2) / R2;
+const float voltageDividerFactor = (R1 + R2) / R2; //=3.2
 
-// === Voltage thresholds ===
+// Voltage thresholds 
 const float chargedThreshold = 12.3;
 const float lowVoltageThreshold = 9.5;
 
@@ -38,10 +46,59 @@ void setup() {
 }
 
 void loop(){
-  // wait for button to be pressed
+ // wait for button to be pressed
   //turn charger off, load on
   //loop waiting for the battery to be discharged
   //after loop is done, turn load off charger on, print how long test took
+
+  // Wait for button to be pressed
+  while (digitalRead(buttonPin) == HIGH) {
+    delay(100); 
+  }
+  
+  Serial.println("Button pressed! Starting discharge test...");
+  
+  // Record start time
+  unsigned long startTime = millis();
+  
+  // Turn charger off, load on
+  powerLoad();
+  Serial.println("Load activated, charger deactivated");
+  
+  // Loop waiting for the battery to be discharged
+  Serial.println("Monitoring battery discharge...");
+  while (true) {
+    float voltage = readBatteryVoltage();
+    Serial.print("Current voltage: ");
+    Serial.println(voltage);
+    
+    // Check if battery is discharged to threshold
+    if (voltage <= lowVoltageThreshold) {
+      Serial.println("Battery discharged to threshold!");
+      break;
+    }
+    
+    delay(10000); // Checks voltage every 10 seconds 
+  }
+  
+  // After loop is done, turn load off charger on, print how long test took
+  unsigned long endTime = millis();
+  unsigned long testDuration = endTime - startTime;
+  
+  allOff(); // Turn off load
+  delay(1000); 
+  chargeBattery(); // Turn on charger
+  
+  Serial.println("DISCHARGE COMPLETE");
+  Serial.print("Test duration: ");
+  Serial.print(testDuration / 1000.0);
+  Serial.println(" seconds");
+  Serial.print("Test duration: ");
+  Serial.print(testDuration / 60000.0); // Convert to minutes
+  Serial.println(" minutes");
+  Serial.println("Battery is now charging...");
+  Serial.println("Press button to start next test");
+  Serial.println("===============================");
 }
 
 void chatgptloop() {
