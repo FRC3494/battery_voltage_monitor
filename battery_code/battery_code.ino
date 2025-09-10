@@ -20,7 +20,7 @@ const int voltagePin = A0;
 const float R1 = 2157.0;  // 2.12k ohms (from battery + to A0)
 const float R2 = 984.0;   // 0.977k ohms (from A0 to GND)
 // Calculate voltage divider factor:
-const float voltageDividerFactor = (R1 + R2) / R2; //=3.2
+const float voltageDividerFactor = 3.189;//(R1 + R2) / R2; //=3.2
 
 int raw = 0;
 float dividedVoltage = 0.0;
@@ -31,7 +31,7 @@ const float lowVoltageThreshold = 9.5;
 
 void setup() {
   Serial.begin(9600);               // Start serial for debugging
-
+  analogReadResolution(10);  
   pinMode(positive_charger, OUTPUT);
   pinMode(negative_charger, OUTPUT);
   pinMode(positive_load, OUTPUT);
@@ -47,7 +47,7 @@ void setup() {
   // while (digitalRead(buttonPin) == HIGH) { // should be at the top of loop, shld start the loop !!!!!!!
 
  // analogReadResolution(10); //change to 10-bit resolution necessary for the uno r4 but not supported by the old uno
-  analogReference(INTERNAL); //Set Analog Reference to 5V
+ // analogReference(AR_DEFAULT); //Set Analog Reference to 5V
 }
 
 void loop(){
@@ -190,6 +190,6 @@ void shutdownAll(const char* reason) {
 
 float readBatteryVoltage() {
   raw = analogRead(voltagePin); //10 bit binary number 0=0volts, 1023= 5volts
-  dividedVoltage = raw * (5.0 / 1023.0); //converts that into 0.0 = 0volts and 5.0 =5volts
+  dividedVoltage = raw * (5.0 / 1023.0)*0.945; //converts that into 0.0 = 0volts and 5.0 =5volts calibration added to the adc to calibrate this
   return dividedVoltage * voltageDividerFactor;
 }
