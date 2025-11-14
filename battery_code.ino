@@ -1,4 +1,3 @@
-
 /*| Arduino Pin | Connects To                            |
 | ----------- | -------------------------------------- |
 | Pin 2       | Button → Other side of button to GND   |
@@ -8,6 +7,7 @@
 | Pin 7       | Relay IN4 (controls negative load)     |
 | A0          | Middle of voltage divider from battery |
 */
+
 // Relay Control Pins 
 const int positive_charger = 4;
 const int negative_charger = 5;
@@ -17,11 +17,14 @@ const int buttonPin = 2;
 const int voltagePin = A0;
 
 // Voltage Divider Resistor Values
-const float R1 = 2200.0;  // 2.2k ohms (from battery + to A0)
-const float R2 = 1000.0;  // 1k ohms (from A0 to GND)
+const float R1 = 2157.0;  // 2.12k ohms (from battery + to A0)
+const float R2 = 984.0;   // 0.977k ohms (from A0 to GND)
 
 // Calculate voltage divider factor:
-const float voltageDividerFactor = (R1 + R2) / R2; //=3.2
+const float voltageDividerFactor = 3.177; //(R1 + R2) / R2; //=3.2
+
+int raw = 0;
+float dividedVoltage = 0.0;
 
 // Voltage thresholds 
 const float chargedThreshold = 12.3;
@@ -29,7 +32,7 @@ const float lowVoltageThreshold = 9.5;
 
 void setup() {
   Serial.begin(9600);               // Start serial for debugging
-
+  analogReadResolution(10);  
   pinMode(positive_charger, OUTPUT);
   pinMode(negative_charger, OUTPUT);
   pinMode(positive_load, OUTPUT);
@@ -43,17 +46,20 @@ void setup() {
 
   // Wait until button is pressed (buttonPin LOW)
   // while (digitalRead(buttonPin) == HIGH) { // should be at the top of loop, shld start the loop !!!!!!!
+  // analogReadResolution(10); //change to 10-bit resolution necessary for the uno r4 but not supported by the old uno
+  // analogReference(AR_DEFAULT); //Set Analog Reference to 5V
 }
 
-void loop(){
- // wait for button to be pressed
+void loop() {
+  // wait for button to be pressed
   //turn charger off, load on
   //loop waiting for the battery to be discharged
   //after loop is done, turn load off charger on, print how long test took
 
   // Wait for button to be pressed
+  Serial.print("Start Up");
   while (digitalRead(buttonPin) == HIGH) {
-    delay(100); 
+    delay(10); 
   }
   
   Serial.println("Button pressed! Starting discharge test...");
@@ -69,6 +75,10 @@ void loop(){
   Serial.println("Monitoring battery discharge...");
   while (true) {
     float voltage = readBatteryVoltage();
+    Serial.print("Raw Measure: ");
+    Serial.println(raw);
+    Serial.print("Analog Measure: ");
+    Serial.println(dividedVoltage);
     Serial.print("Current voltage: ");
     Serial.println(voltage);
     
@@ -78,7 +88,7 @@ void loop(){
       break;
     }
     
-    delay(10000); // Checks voltage every 10 seconds 
+    delay(1000); // Checks voltage every 1 second
   }
   
   // After loop is done, turn load off charger on, print how long test took
@@ -91,11 +101,15 @@ void loop(){
   
   Serial.println("DISCHARGE COMPLETE");
   Serial.print("Test duration: ");
-  Serial.print(testDuration / 1000.0);
+  /*Serial.print(testDuration / 1000.0);
   Serial.println(" seconds");
   Serial.print("Test duration: ");
   Serial.print(testDuration / 60000.0); // Convert to minutes
-  Serial.println(" minutes");
+  Serial.println(" minutes");*/
+  Serial.print (testDuration / (60*1000));
+  Serial.print(":");
+  Serial.print (testDuration % (60*1000));
+  Serial.println("minutes");
   Serial.println("Battery is now charging...");
   Serial.println("Press button to start next test");
   Serial.println("===============================");
@@ -116,7 +130,7 @@ void chatgptloop() {
     Serial.print("Voltage under load: ");
     Serial.println(voltage);
 
-    if (voltage < lowVoltageThreshold) {                      // new loop: keeps going on until the voltage is below the min voltage
+    if (voltage < lowVoltageThreshold) { // new loop: keeps going on until the voltage is below the min voltage
       shutdownAll("Voltage dropped too low under load");
       return;
     }
@@ -162,7 +176,6 @@ void chargeBattery() {
   digitalWrite(positive_load, LOW);
   digitalWrite(positive_charger, HIGH);
   digitalWrite(negative_charger, HIGH);
-  
 }
 
 void shutdownAll(const char* reason) {
@@ -174,7 +187,7 @@ void shutdownAll(const char* reason) {
 }
 
 float readBatteryVoltage() {
-  int raw = analogRead(voltagePin); //10 bit binary number 0=0volts, 1023= 5volts
-  float dividedVoltage = raw * (5.0 / 1023.0); //converts that into 0.0 = 0volts and 5.0 =5volts
+  raw = analogRead(voltagePin); //10 bit binary number 0=0volts, 1023= 5volts
+  dividedVoltage = raw * (5.0 / 1023.0) * 0.945; //converts that into 0.0 = 0volts and 5.0 =5volts calibration added to the adc to calibrate this
   return dividedVoltage * voltageDividerFactor;
 }
