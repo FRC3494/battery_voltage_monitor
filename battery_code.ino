@@ -21,7 +21,7 @@ const float R1 = 2157.0;  // 2.12k ohms (from battery + to A0)
 const float R2 = 984.0;   // 0.977k ohms (from A0 to GND)
 
 // Calculate voltage divider factor:
-const float voltageDividerFactor = 3.177; //(R1 + R2) / R2; //=3.2
+const float voltageDividerFactor = 3.347; //(R1 + R2) / R2; //=3.2
 
 int raw = 0;
 float dividedVoltage = 0.0;
