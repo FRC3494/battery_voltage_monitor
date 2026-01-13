@@ -1,3 +1,4 @@
+//LOAD DRAWS 25 AMPS FORM THE LOAD
 /*| Arduino Pin | Connects To                            |
 | ----------- | -------------------------------------- |
 | Pin 2       | Button → Other side of button to GND   |
@@ -21,7 +22,7 @@ const float R1 = 2157.0;  // 2.12k ohms (from battery + to A0)
 const float R2 = 984.0;   // 0.977k ohms (from A0 to GND)
 
 // Calculate voltage divider factor:
-const float voltageDividerFactor = 3.347; //(R1 + R2) / R2; //=3.2
+const float voltageDividerFactor = 3.358; //(R1 + R2) / R2; //=3.2
 
 int raw = 0;
 float dividedVoltage = 0.0;
@@ -107,9 +108,9 @@ void loop() {
   Serial.print(testDuration / 60000.0); // Convert to minutes
   Serial.println(" minutes");*/
   Serial.print (testDuration / (60*1000));
-  Serial.print(":");
-  Serial.print (testDuration % (60*1000));
-  Serial.println("minutes");
+  Serial.print(" minutes, ");
+  Serial.print((testDuration % (60*1000))/1000);
+  Serial.println(" seconds.");
   Serial.println("Battery is now charging...");
   Serial.println("Press button to start next test");
   Serial.println("===============================");
@@ -158,24 +159,24 @@ void chatgptloop() {
 }
 
 void allOff() {
-  digitalWrite(positive_charger, LOW);
-  digitalWrite(negative_charger, LOW);
-  digitalWrite(positive_load, LOW);
-  digitalWrite(negative_load, LOW);
-}
-
-void powerLoad() {
-  digitalWrite(positive_charger, LOW);
-  digitalWrite(negative_charger, LOW);
+  digitalWrite(positive_charger, HIGH);
+  digitalWrite(negative_charger, HIGH);
   digitalWrite(positive_load, HIGH);
   digitalWrite(negative_load, HIGH);
 }
 
-void chargeBattery() {
-  digitalWrite(negative_load, LOW);
-  digitalWrite(positive_load, LOW);
+void powerLoad() {
   digitalWrite(positive_charger, HIGH);
   digitalWrite(negative_charger, HIGH);
+  digitalWrite(positive_load, LOW);
+  digitalWrite(negative_load, LOW);
+}
+
+void chargeBattery() {
+  digitalWrite(negative_load, HIGH);
+  digitalWrite(positive_load, HIGH);
+  digitalWrite(positive_charger, LOW);
+  digitalWrite(negative_charger, LOW);
 }
 
 void shutdownAll(const char* reason) {
