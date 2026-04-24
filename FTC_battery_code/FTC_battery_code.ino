@@ -10,8 +10,8 @@
 */
 
 // Relay Control Pins 
-//const int positive_charger = 4;
-//const int negative_charger = 5;
+const int positive_charger = 4;
+const int negative_charger = 5;
 const int positive_load = 6;
 const int negative_load = 7;
 const int buttonPin = 2;
@@ -31,14 +31,14 @@ float voltage = 0.0;
 // Voltage thresholds 
 const float chargedThreshold = 12.3;
 const float lowVoltageThresholdPb = 9.5;
-const float lowVoltageThresholdNiMh = 8;
+const float lowVoltageThresholdNiMh = 8.5;
 const float lowVoltageThreshold = lowVoltageThresholdNiMh;
 
 void setup() {
   Serial.begin(9600);               // Start serial for debugging
   analogReadResolution(10);  
- // pinMode(positive_charger, OUTPUT);
- // pinMode(negative_charger, OUTPUT);
+  pinMode(positive_charger, OUTPUT);
+  pinMode(negative_charger, OUTPUT);
   pinMode(positive_load, OUTPUT);
   pinMode(negative_load, OUTPUT);
 
@@ -47,11 +47,6 @@ void setup() {
   allOff();                         // Turn off all relays at start
 
   Serial.println("System Powered On. Reset Ah meter. Press button to start.");
-
-  // Wait until button is pressed (buttonPin LOW)
-  // while (digitalRead(buttonPin) == HIGH) { // should be at the top of loop, shld start the loop !!!!!!!
-  // analogReadResolution(10); //change to 10-bit resolution necessary for the uno r4 but not supported by the old uno
-  // analogReference(AR_DEFAULT); //Set Analog Reference to 5V
 }
 
 void loop() {
@@ -112,11 +107,12 @@ void loop() {
 
 void printVoltage(){
   readBatteryVoltage();
-  Serial.print("Raw Measure: ");
-  Serial.print(raw);
-  Serial.print(", Analog Measure: ");
-  Serial.print(dividedVoltage);
-  Serial.print(", Current voltage: ");
+  // Serial.print("Raw Measure: ");
+  // Serial.print(raw);
+  // Serial.print(", Analog Measure: ");
+  // Serial.print(dividedVoltage);
+  // Serial.print(", ");
+  Serial.print("Battery voltage: ");
   Serial.print(voltage);
 }
 
@@ -128,15 +124,15 @@ void printElapsedTime(unsigned long startTime) {
   Serial.print("s");
 }
 void allOff() {
- // digitalWrite(positive_charger, HIGH);
- // digitalWrite(negative_charger, HIGH);
+  digitalWrite(positive_charger, HIGH);
+  digitalWrite(negative_charger, HIGH);
   digitalWrite(positive_load, HIGH);
   digitalWrite(negative_load, HIGH);
 }
 
 void powerLoad() {
- // digitalWrite(positive_charger, HIGH);
- // digitalWrite(negative_charger, HIGH);
+  digitalWrite(positive_charger, HIGH);
+  digitalWrite(negative_charger, HIGH);
   digitalWrite(positive_load, LOW);
   digitalWrite(negative_load, LOW);
 }
